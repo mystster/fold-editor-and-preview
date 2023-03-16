@@ -1,0 +1,26 @@
+{
+  "context-menu": {
+    ".CodeMirror": [
+      {
+        "label": "Toggle fold-editor-and-preview",
+        "command": "fold-editor-and-preview:toggle"
+      }
+    ]
+  },
+  "menu": [
+    {
+      "label": "Plugins",
+      "submenu": [
+        {
+          "label": "fold-editor-and-preview",
+          "submenu": [
+            {
+              "label": "Toggle",
+              "command": "fold-editor-and-preview:toggle"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

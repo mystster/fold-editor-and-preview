@@ -1,0 +1,5 @@
+{
+  "body": {
+    "ctrl-alt-o": "fold-editor-and-preview:toggle"
+  }
+}

@@ -16,7 +16,7 @@
           "submenu": [
             {
               "label": "Toggle",
-              "command": "fold-editor-and-preview:toggle"
+              "command": "fold-editor-and-preview:unfold-all"
             }
           ]
         }

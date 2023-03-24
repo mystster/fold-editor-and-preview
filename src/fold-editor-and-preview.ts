@@ -1,8 +1,13 @@
 /// <reference types="codemirror/addon/fold/foldgutter" />
 
 import { Inkdrop, Editor } from "./types";
-import CodeMirror, { Position } from "codemirror";
-// import FoldGutterOptions from "codemirror/addon/fold/foldgutter"
+import CodeMirror from "codemirror";
+//@ts-ignore
+import { zone } from "mdast-zone";
+
+declare global {
+  var inkdrop: Inkdrop;
+}
 
 declare module "codemirror" {
   export type FoldRangeFinder = (
@@ -11,7 +16,7 @@ declare module "codemirror" {
   ) => CodeMirror.FoldRange | undefined;
   interface FoldGutterOptions {
     /*
-     * The range-finder function to use when determining whether something can be folded. 
+     * The range-finder function to use when determining whether something can be folded.
      * When not given, CodeMirror.fold.auto will be used as default.
      */
     rangeFinder?: FoldRangeFinder | undefined;
@@ -22,26 +27,51 @@ declare module "codemirror" {
   }
 }
 
-
 const app = require("electron").remote.app;
 
 const modulePath = app.getAppPath() + "/node_modules/";
 require(modulePath + "codemirror/addon/fold/foldcode.js");
 require(modulePath + "codemirror/addon/fold/foldgutter.js");
-const FOLD_START_KEYWORD = /^<!-- region\((.*)\) -->/;
+const { markdownRenderer } = require("inkdrop");
+const FOLD_START_KEYWORD = /^<!-- region\s(.*) -->/;
 const FOLD_END_KEYWORD = /<!-- endregion -->/;
 
-declare global {
-  var inkdrop: Inkdrop;
+function foldRemarkPlugin() {
+  return (tree: any) =>
+    zone(
+      tree,
+      FOLD_START_KEYWORD,
+      FOLD_END_KEYWORD,
+      (start: any, nodes: Array<any>, end: any) => {
+        console.dir(start);
+        let startMsg = "detail";
+        const startMatch = start.value.match(FOLD_START_KEYWORD);
+        if (startMatch) {
+          startMsg = startMatch[1];
+        }
+        return [
+          {
+            type: "html",
+            value: "<details><summary>" + startMsg + "</summary>",
+          },
+          ...nodes,
+          { type: "html", value: "</details>" },
+        ];
+      }
+    );
 }
 
 module.exports = {
   activate() {
+    console.dir(global.inkdrop);
     global.inkdrop.onEditorLoad(this.handleEditorInit.bind(this));
     this.subscription = inkdrop.commands.add(document.body, {
       "fold-editor-and-preview::fold-all": () => this.foldAll(),
       "fold-editor-and-preview:unfold-all": () => this.unfoldAll(),
     });
+    if (markdownRenderer) {
+      markdownRenderer.remarkPlugins.push(foldRemarkPlugin);
+    }
   },
 
   deactivate() {
@@ -61,7 +91,6 @@ module.exports = {
       this.originalGutters.concat(["CodeMirror-foldgutter"])
     );
     console.dir(cm.getOption("gutters"));
-    // cm.setOption("foldGutter", true);
     cm.setOption("foldGutter", {
       rangeFinder: (
         codemirror: CodeMirror.Editor,
@@ -94,7 +123,6 @@ module.exports = {
         return undefined;
       },
     });
-
   },
 
   foldAll() {

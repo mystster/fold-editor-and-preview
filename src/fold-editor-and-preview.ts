@@ -43,7 +43,6 @@ function foldRemarkPlugin() {
       FOLD_START_KEYWORD,
       FOLD_END_KEYWORD,
       (start: any, nodes: Array<any>, end: any) => {
-        console.dir(start);
         let startMsg = "detail";
         const startMatch = start.value.match(FOLD_START_KEYWORD);
         if (startMatch) {
@@ -63,12 +62,7 @@ function foldRemarkPlugin() {
 
 module.exports = {
   activate() {
-    console.dir(global.inkdrop);
     global.inkdrop.onEditorLoad(this.handleEditorInit.bind(this));
-    this.subscription = inkdrop.commands.add(document.body, {
-      "fold-editor-and-preview::fold-all": () => this.foldAll(),
-      "fold-editor-and-preview:unfold-all": () => this.unfoldAll(),
-    });
     if (markdownRenderer) {
       markdownRenderer.remarkPlugins.push(foldRemarkPlugin);
     }
@@ -79,7 +73,6 @@ module.exports = {
     if (editor && editor.cm && this.originalGutters) {
       editor.cm.setOption("gutters", this.originalGutters);
     }
-    this.subscription.dispose();
   },
 
   handleEditorInit(editor: Editor) {
@@ -96,7 +89,6 @@ module.exports = {
         codemirror: CodeMirror.Editor,
         start: CodeMirror.Position
       ) => {
-        console.log("rangeFinder fire: " + start.line);
         if (codemirror.getLine(start.line).match(FOLD_START_KEYWORD)) {
           let keywordCount: number = 1;
           for (
@@ -123,15 +115,5 @@ module.exports = {
         return undefined;
       },
     });
-  },
-
-  foldAll() {
-    var editor = global.inkdrop.getActiveEditor();
-    editor.cm.execCommand("foldAll");
-  },
-
-  unfoldAll() {
-    var editor = global.inkdrop.getActiveEditor();
-    editor.cm.execCommand("unfoldAll");
   },
 };

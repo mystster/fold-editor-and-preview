@@ -1,7 +1,7 @@
 {
   "name": "fold-editor-and-preview",
   "main": "./lib/fold-editor-and-preview",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "add fold function in editor and preview",
   "keywords": [
     "inkdrop",

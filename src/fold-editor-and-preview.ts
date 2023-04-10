@@ -27,7 +27,7 @@ declare module "codemirror" {
   }
 }
 
-const app = require("electron").remote.app;
+const app = require("@electron/remote").app;
 
 const modulePath = app.getAppPath() + "/node_modules/";
 require(modulePath + "codemirror/addon/fold/foldcode.js");

@@ -29,9 +29,10 @@ if you write start fold name is
 ![example](https://github.com/mystster/fold-editor-and-preview/raw/master/docs/images/screencapture.gif)
 
 ## TODO
-- [ ] support nested fold
+- [x] support nested fold
 - [ ] customize keyword
 - [ ] auto expand
 
 ## Changelog
+- 0.2.0 - support nested fold
 - 0.1.0 - First release

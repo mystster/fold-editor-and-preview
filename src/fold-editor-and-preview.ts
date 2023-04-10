@@ -2,8 +2,8 @@
 
 import { Inkdrop, Editor } from "./types";
 import CodeMirror from "codemirror";
-//@ts-ignore
-import { zone } from "mdast-zone";
+import { Root, Content } from "mdast";
+import { visit } from "unist-util-visit";
 
 declare global {
   var inkdrop: Inkdrop;
@@ -27,44 +27,56 @@ declare module "codemirror" {
   }
 }
 
-const app = require("electron").remote.app;
+type mdastNode = Root | Content;
+
+const app = require("@electron/remote").app;
 
 const modulePath = app.getAppPath() + "/node_modules/";
 require(modulePath + "codemirror/addon/fold/foldcode.js");
 require(modulePath + "codemirror/addon/fold/foldgutter.js");
 const { markdownRenderer } = require("inkdrop");
-const FOLD_START_KEYWORD = /^<!-- region\s(.*) -->/;
-const FOLD_END_KEYWORD = /<!-- endregion -->/;
+const FOLD_START_KEYWORD =/!-- region\s*(.*) -->/;
+const FOLD_END_KEYWORD =/!-- endregion -->/;
 
-function foldRemarkPlugin() {
-  return (tree: any) =>
-    zone(
-      tree,
-      FOLD_START_KEYWORD,
-      FOLD_END_KEYWORD,
-      (start: any, nodes: Array<any>, end: any) => {
-        let startMsg = "detail";
-        const startMatch = start.value.match(FOLD_START_KEYWORD);
-        if (startMatch) {
-          startMsg = startMatch[1];
+function foldRemark() {
+  return (tree: mdastNode) => {
+    visit(tree, (node, index, parent) => {
+      if (node.type === "html" && parent != null) {
+        if (node.value.match(FOLD_START_KEYWORD)) {
+          let keywordCount = 1;
+          for (
+            //@ts-ignore
+            let index = parent.children.indexOf(node) + 1;
+            index < parent.children.length;
+            index++
+          ) {
+            const element = parent.children[index];
+            if (element.type === "html" && element.value.match(FOLD_START_KEYWORD)) {
+              keywordCount++;
+            } else if (
+              element.type === "html" && element.value.match(FOLD_END_KEYWORD)) {
+              keywordCount--;
+            }
+            if (keywordCount == 0 && element.type === "html") {
+              element.value = "</details>";
+              node.value = "<details><summary>" +
+                //@ts-expect-error
+                (node.value.match(FOLD_START_KEYWORD)[1].trim().length > 0 ? node.value.match(FOLD_START_KEYWORD)[1] : "detail") +
+                "</summary>";
+              break;
+            }
+          }
         }
-        return [
-          {
-            type: "html",
-            value: "<details><summary>" + startMsg + "</summary>",
-          },
-          ...nodes,
-          { type: "html", value: "</details>" },
-        ];
       }
-    );
+    });
+  };
 }
 
 module.exports = {
   activate() {
     global.inkdrop.onEditorLoad(this.handleEditorInit.bind(this));
     if (markdownRenderer) {
-      markdownRenderer.remarkPlugins.push(foldRemarkPlugin);
+      markdownRenderer.remarkPlugins.push(foldRemark);
     }
   },
 
@@ -78,12 +90,10 @@ module.exports = {
   handleEditorInit(editor: Editor) {
     const cm = editor.cm;
     this.originalGutters = cm.getOption("gutters");
-    console.dir(this.originalGutters);
     cm.setOption(
       "gutters",
       this.originalGutters.concat(["CodeMirror-foldgutter"])
     );
-    console.dir(cm.getOption("gutters"));
     cm.setOption("foldGutter", {
       rangeFinder: (
         codemirror: CodeMirror.Editor,

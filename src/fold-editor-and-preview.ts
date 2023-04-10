@@ -91,12 +91,10 @@ module.exports = {
   handleEditorInit(editor: Editor) {
     const cm = editor.cm;
     this.originalGutters = cm.getOption("gutters");
-    console.dir(this.originalGutters);
     cm.setOption(
       "gutters",
       this.originalGutters.concat(["CodeMirror-foldgutter"])
     );
-    console.dir(cm.getOption("gutters"));
     cm.setOption("foldGutter", {
       rangeFinder: (
         codemirror: CodeMirror.Editor,

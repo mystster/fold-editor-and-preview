@@ -17,12 +17,13 @@
     "inkdrop": "^5.3.1"
   },
   "dependencies": {
-    "mdast-zone": "github:mystster/mdast-zone#b0323332f9bbe8fe5c33b0bcd280a36d777f1686"
+    "unist-util-visit": "^4.1.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^24.0.1",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@types/codemirror": "^5.60.7",
+    "@types/mdast": "^3.0.11",
     "@types/node": "^16.18.16",
     "codemirror": "^5.65.12",
     "rollup": "^3.19.1",

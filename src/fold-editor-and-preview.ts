@@ -1,5 +1,4 @@
 /// <reference types="codemirror/addon/fold/foldgutter" />
-/// <reference types="mdast" />
 
 import { Inkdrop, Editor } from "./types";
 import CodeMirror from "codemirror";
